@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Phase 1: Crawl pembacouncil.gov.zm to inventory all pages, PDFs, and data sources.
+Phase 1: Scrapping  pembacouncil.gov.zm to get  all pages, PDFs, and data sources.
 Group 42 — Pemba Town Council — CSC 4792 Mini Project
 """
 
@@ -19,7 +19,6 @@ HEADERS = {
 }
 
 def fetch_page(url):
-    """Fetch a page and return BeautifulSoup object."""
     try:
         resp = requests.get(url, headers=HEADERS, verify=False, timeout=15)
         resp.encoding = resp.apparent_encoding or "utf-8"
@@ -30,7 +29,7 @@ def fetch_page(url):
         return None
 
 def find_all_links(soup, base_url):
-    """Extract all internal links from a page."""
+    """ all internal links from a page."""
     links = set()
     if not soup:
         return links
@@ -57,7 +56,7 @@ def find_pdfs(soup, base_url):
     return pdfs
 
 def find_downloads(soup, base_url):
-    """Extract download links (PDFs, documents, etc.)."""
+    """ download links (PDFs, documents, etc.)."""
     downloads = set()
     if not soup:
         return downloads
@@ -71,10 +70,10 @@ def find_downloads(soup, base_url):
     return downloads
 
 def extract_page_content(soup):
-    """Extract main text content from a page."""
+    """ main text content from a page."""
     if not soup:
         return ""
-    # Try to find main content area
+    #  finding main content area
     main = soup.find("main") or soup.find("article") or soup.find("div", class_=re.compile("content|entry|post"))
     if not main:
         main = soup.find("body")
@@ -87,7 +86,7 @@ def extract_news_posts(soup, base_url):
     posts = []
     if not soup:
         return posts
-    # Look for article/post entries
+    # article/post entries
     for article in soup.find_all(["article", "div"], class_=re.compile("post|entry|news|item")):
         title_tag = article.find(["h1", "h2", "h3", "h4", "a"])
         title = title_tag.get_text(strip=True) if title_tag else "Untitled"
@@ -108,13 +107,13 @@ def extract_news_posts(soup, base_url):
     return posts
 
 def extract_civic_leaders(soup):
-    """Extract civic leader information."""
+    """ civic leader information."""
     leaders = []
     if not soup:
         return leaders
     for item in soup.find_all(["div", "li", "tr", "td"]):
         text = item.get_text(separator=" ", strip=True)
-        # Look for titles/designations
+        # titles/designations
         if any(title in text.lower() for title in ["mayor", "councilor", "chairperson", "secretary", "director"]):
             if len(text) < 300:
                 leaders.append(text)
@@ -140,7 +139,7 @@ def main():
         "zdsp": f"{BASE_URL}/?page_id=2709",
     }
     
-    # Step 1: Fetch known pages
+    # Fetch known pages
     print("\n[STEP 1] Fetching known pages...")
     for name, url in known_pages.items():
         print(f"\n  --- {name.upper()} ---")
@@ -191,7 +190,7 @@ def main():
             all_pdfs.update(page_pdfs)
             all_downloads.update(page_downloads)
     
-    # Step 3: Try to find more PDFs by searching common WordPress paths
+    #  finding  more PDFs by searching common WordPress paths
     print("\n[STEP 3] Searching for additional documents...")
     search_urls = [
         f"{BASE_URL}/wp-content/uploads/",
@@ -205,7 +204,7 @@ def main():
             page_pdfs = find_pdfs(soup, url)
             all_pdfs.update(page_pdfs)
     
-    # Step 4: Compile results
+    #Compile results
     print("\n" + "=" * 70)
     print("CRAWL RESULTS SUMMARY")
     print("=" * 70)
